@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import 'mocha';
-import { Logger } from '../src';
+import Logger from '../src';
 
 describe('logger', () => {
   const timestamp = '\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}.\\d{3}';
