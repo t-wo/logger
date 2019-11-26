@@ -7,10 +7,19 @@
   "scripts": {
     "clean": "rmdir lib /S /Q",
     "build": "tsc",
+    "prepare": "npm run build",
+    "prepublishOnly" : "npm test && npm run lint",
+    "preversion" : "npm run lint",
+    "version" : "npm run format && git add -A src",
+    "postversion" : "git push && git push --tags",
     "test": "node --require ts-node/register ./node_modules/mocha/bin/mocha ./test/test.ts",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "format-build": "prettier --write \"lib/**/*.js\" \"lib/**/*.ts\"",
     "lint": "tslint -p tsconfig.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/t-wo/logger.git"
   },
   "husky": {
     "hooks": {
