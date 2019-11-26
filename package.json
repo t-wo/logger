@@ -1,0 +1,48 @@
+{
+  "name": "logger",
+  "version": "1.0.0",
+  "description": "yet another logger",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "clean": "rmdir lib /S /Q",
+    "build": "tsc",
+    "test": "node --require ts-node/register ./node_modules/mocha/bin/mocha ./test/test.ts",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "format-build": "prettier --write \"lib/**/*.js\" \"lib/**/*.ts\"",
+    "lint": "tslint -p tsconfig.json"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged && npm run test"
+    }
+  },
+  "lint-staged": {
+    "**/*.+(js|jsx|css|less|scss|ts|tsx|md)": [
+      "tslint --fix -p tsconfig.json",
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "author": "T|WO",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chai": "4.2.5",
+    "@types/mocha": "5.2.7",
+    "@types/node": "12.12.12",
+    "@types/sonic-boom": "0.7.0",
+    "chai": "4.2.0",
+    "chai-match": "1.1.1",
+    "husky": "3.1.0",
+    "lint-staged": "9.4.3",
+    "mocha": "6.2.2",
+    "prettier": "1.19.1",
+    "ts-node": "8.5.2",
+    "tslint": "5.20.1",
+    "tslint-config-prettier": "1.18.0",
+    "typescript": "3.7.2"
+  },
+  "dependencies": {
+    "sonic-boom": "0.7.6"
+  }
+}
