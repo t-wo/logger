@@ -32,7 +32,7 @@ interface IFormatterImpl {
   idx: number;
 }
 
-export default class Logger {
+export class Logger {
   public static Level = Level;
   public static BufferAppender = BufferAppender;
   public static FileAppender = FileAppender;
