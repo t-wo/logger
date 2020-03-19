@@ -20,7 +20,7 @@ class FileAppender implements IAppender {
   private fileSize: number = 0;
   private rotating: boolean = false;
 
-  constructor(filename: string, options: IFileAppenderOptions = {}) {
+  constructor(filename: string, options: IFileAppenderOptions = { autoFlushTimeout: 10000 }) {
     this.filename = filename;
     if (options.autoFlushTimeout) {
       this.autoFlushTimeoutMilliseconds = Math.max(10, options.autoFlushTimeout);
