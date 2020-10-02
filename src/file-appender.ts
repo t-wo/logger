@@ -20,13 +20,13 @@ class FileAppender implements IAppender {
   private fileSize: number = 0;
   private rotating: boolean = false;
 
-  constructor(filename: string, options: IFileAppenderOptions = { autoFlushTimeout: 10000 }) {
+  constructor(filename: string, options: IFileAppenderOptions = { autoFlushTimeout: 100 }) {
     this.filename = filename;
     if (options.autoFlushTimeout) {
       this.autoFlushTimeoutMilliseconds = Math.max(10, options.autoFlushTimeout);
     }
     if (options.maxFileSize) {
-      this.maxFileSize = Math.max(1048576, options.maxFileSize); // force minimum to 1MB
+      this.maxFileSize = Math.max(4096, options.maxFileSize); // force minimum to 4KB
     }
   }
 
@@ -54,25 +54,18 @@ class FileAppender implements IAppender {
     }
     if (this.sonic === null) {
       if (!fs.existsSync(path.dirname(this.filename))) {
-        fs.mkdirSync(path.dirname(this.filename));
+        fs.mkdirSync(path.dirname(this.filename), { recursive: true });
       }
-      this.sonic = new SonicBoom(this.filename, 10000);
-    }
-    if (this.maxFileSize !== null) {
-      if (this.fileSize === null) {
-        // uses private API
-        // @ts-ignore
-        if (this.sonic.fd >= 0) {
-          // uses private API
-          // @ts-ignore
-          const stat = fs.fstatSync(this.sonic.fd);
-          this.fileSize = stat.size + text.length;
-        }
-      } else {
-        this.fileSize += text.length;
-      }
+      const fd = fs.openSync(this.filename, 'a');
+      const stats = fs.fstatSync(fd);
+      this.fileSize = stats.size;
+      // @ts-ignore
+      this.sonic = new SonicBoom({ fd, minLength: 10000 });
     }
 
+    this.fileSize += text.length;
+
+    // @ts-ignore
     this.sonic.write(text);
 
     if (this.maxFileSize !== null && this.fileSize >= this.maxFileSize) {
@@ -116,14 +109,20 @@ class FileAppender implements IAppender {
     sonic.destroy();
 
     const fd = fs.openSync(this.filename, 'a');
-    this.sonic = new SonicBoom(fd, 10000);
-    sonic.write(buf);
-    sonic.flushSync();
+    // @ts-ignore
+    const nSonic = new SonicBoom({ fd, minLength: 10000 });
+    this.sonic = nSonic;
+    nSonic.write(buf);
+    nSonic.flushSync();
   }
 
   private rotate() {
     this.fileSize = 0;
     this.flushSync();
+    if (this.sonic !== null) {
+      this.sonic.destroy();
+      this.sonic = null;
+    }
     const now = new Date();
     const nowString = formatTime(now);
     const nowNameSafeString = nowString.replace(/-|\.|:|\s/g, '');
@@ -133,9 +132,9 @@ class FileAppender implements IAppender {
     const newName = `${base}_until_${nowNameSafeString}${ext}`;
     const newPath = path.join(dir, newName);
     fs.renameSync(this.filename, newPath);
-    if (this.sonic) {
-      this.sonic.reopen();
-    }
+
+    // @ts-ignore
+    this.sonic = new SonicBoom({ dest: this.filename, minLength: 10000 });
   }
 }
 

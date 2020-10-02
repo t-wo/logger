@@ -122,7 +122,7 @@ export class Logger {
 
   constructor(props: IProps = {}) {
     this.impl = this.prep(props.streams ? props.streams : []);
-    if (props.doNotFlushOnExit === true) {
+    if (props.doNotFlushOnExit !== true) {
       process.on('exit', this.flushSync.bind(this));
     }
   }
@@ -175,6 +175,7 @@ export class Logger {
   }
 
   public end() {
+    this.flushSync();
     for (const stream of this.streams) {
       if (stream.appender.end) {
         stream.appender.end();
